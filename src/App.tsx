@@ -35,7 +35,7 @@ const initialStates = models.reduce(
 function App() {
   const [runs, setRuns] = useState<Record<ProviderId, ModelRunState>>(initialStates)
   const [lastPrompt, setLastPrompt] = useState('')
-  const { backgroundUrl, fontFamily, setFontFamily } = usePreferences()
+  const { fontFamily, setFontFamily } = usePreferences()
   const { register, handleSubmit, watch, resetField } = useForm<PromptForm>({
     defaultValues: { prompt: '' },
   })
@@ -45,13 +45,12 @@ function App() {
 
   const appStyle = useMemo<CSSProperties & Record<string, string>>(
     () => ({
-      '--app-bg-image': `url("${backgroundUrl}")`,
       '--app-font':
         fontFamily === 'System'
           ? 'system-ui, Segoe UI, sans-serif'
           : `${fontFamily}, system-ui, Segoe UI, sans-serif`,
     }),
-    [backgroundUrl, fontFamily],
+    [fontFamily],
   )
 
   const runSingleModel = async (model: ModelConfig, prompt: string) => {
