@@ -2,10 +2,12 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   AlertTriangle,
+  BrainCircuit,
   Check,
   Copy,
-  Image,
+  Gem,
   LoaderCircle,
+  Network,
   RefreshCw,
   Send,
   Sparkles,
@@ -33,9 +35,7 @@ const initialStates = models.reduce(
 function App() {
   const [runs, setRuns] = useState<Record<ProviderId, ModelRunState>>(initialStates)
   const [lastPrompt, setLastPrompt] = useState('')
-  const [backgroundDraft, setBackgroundDraft] = useState('')
-  const { backgroundUrl, fontFamily, setBackgroundUrl, setFontFamily } =
-    usePreferences()
+  const { backgroundUrl, fontFamily, setFontFamily } = usePreferences()
   const { register, handleSubmit, watch, resetField } = useForm<PromptForm>({
     defaultValues: { prompt: '' },
   })
@@ -98,87 +98,67 @@ function App() {
     })
   }
 
-  const applyBackground = () => {
-    const nextBackground = backgroundDraft.trim()
-    if (nextBackground) {
-      setBackgroundUrl(nextBackground)
-      setBackgroundDraft('')
-    }
-  }
-
   return (
     <main className="app-shell" style={appStyle}>
-      <div className="background-overlay" />
-
       <section className="workspace">
-        <header className="brand-bar">
-          <img
-            src="/assets/logo/lam-nexus-logo.png"
-            alt="LAM NEXUS"
-            className="brand-logo"
-          />
-          <div className="brand-copy">
-            <span>LAM NEXUS</span>
-            <strong>Multi-model intelligence workspace</strong>
+        <section className="hero-stage">
+          <div className="hero-topbar">
+            <label className="font-control">
+              <Type size={16} />
+              <select
+                value={fontFamily}
+                onChange={(event) => setFontFamily(event.target.value)}
+                aria-label="Select font"
+              >
+                <option>Inter</option>
+                <option>Geist</option>
+                <option>Manrope</option>
+                <option>System</option>
+              </select>
+            </label>
           </div>
-        </header>
 
-        <form className="prompt-zone" onSubmit={handleSubmit(runPrompt)}>
-          <label htmlFor="prompt">Prompt</label>
-          <div className="prompt-card">
-            <textarea
-              id="prompt"
-              rows={4}
-              placeholder="Ask once. Compare GPT, Claude, Gemini, and Llama."
-              {...register('prompt')}
+          <header className="brand-bar">
+            <img
+              src="/assets/logo/lam-nexus-logo.png"
+              alt="LAM NEXUS"
+              className="brand-logo"
             />
-            <div className="prompt-actions">
-              <button
-                type="button"
-                className="icon-button ghost"
-                onClick={() => resetField('prompt')}
-                title="Clear prompt"
-                aria-label="Clear prompt"
-              >
-                <X size={18} />
-              </button>
-              <button
-                type="submit"
-                className="send-button"
-                disabled={!promptValue?.trim() || isAnyLoading}
-              >
-                {isAnyLoading ? <LoaderCircle size={18} /> : <Send size={18} />}
-                <span>{isAnyLoading ? 'Running' : 'Send'}</span>
-              </button>
+          </header>
+
+          <form className="prompt-zone" onSubmit={handleSubmit(runPrompt)}>
+            <div className="prompt-card">
+              <textarea
+                id="prompt"
+                rows={3}
+                placeholder="Ask LAM NEXUS anything..."
+                {...register('prompt')}
+              />
+              <div className="prompt-actions">
+                <button
+                  type="button"
+                  className="icon-button ghost"
+                  onClick={() => resetField('prompt')}
+                  title="Clear prompt"
+                  aria-label="Clear prompt"
+                >
+                  <X size={18} />
+                </button>
+                <button
+                  type="submit"
+                  className="send-button"
+                  disabled={!promptValue?.trim() || isAnyLoading}
+                >
+                  {isAnyLoading ? (
+                    <LoaderCircle className="spin-icon" size={18} />
+                  ) : (
+                    <Send size={18} />
+                  )}
+                  <span>{isAnyLoading ? 'Running' : 'Send'}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
-
-        <section className="settings-strip" aria-label="Workspace settings">
-          <label>
-            <Type size={16} />
-            <select
-              value={fontFamily}
-              onChange={(event) => setFontFamily(event.target.value)}
-              aria-label="Select font"
-            >
-              <option>Inter</option>
-              <option>Geist</option>
-              <option>Manrope</option>
-              <option>System</option>
-            </select>
-          </label>
-          <label className="background-field">
-            <Image size={16} />
-            <input
-              value={backgroundDraft}
-              onChange={(event) => setBackgroundDraft(event.target.value)}
-              placeholder="Paste background image URL"
-            />
-          </label>
-          <button type="button" className="small-button" onClick={applyBackground}>
-            Apply
-          </button>
+          </form>
         </section>
 
         <section className="response-grid" aria-label="LLM responses">
@@ -217,11 +197,19 @@ const ResponsePanel = ({
   }
 
   return (
-    <article className={`response-panel ${state.status}`}>
+    <article
+      className={`response-panel ${state.status}`}
+      style={{ '--model-accent': model.accent } as CSSProperties}
+    >
       <div className="panel-heading">
-        <div>
-          <span>{model.provider}</span>
-          <strong>{model.model}</strong>
+        <div className="model-title">
+          <span className="model-icon">
+            <ModelIcon id={model.id} />
+          </span>
+          <div>
+            <span>{model.provider}</span>
+            <strong>{model.model}</strong>
+          </div>
         </div>
         <StatusBadge state={state} />
       </div>
@@ -229,7 +217,7 @@ const ResponsePanel = ({
       <div className="panel-body">
         {state.status === 'idle' && (
           <div className="empty-state">
-            <Sparkles size={24} />
+            <ModelIcon id={model.id} />
             <p>{model.tone}</p>
           </div>
         )}
@@ -312,6 +300,22 @@ const StatusBadge = ({ state }: { state: ModelRunState }) => {
   }
 
   return <span className="status-badge">Idle</span>
+}
+
+const ModelIcon = ({ id }: { id: ProviderId }) => {
+  if (id === 'gpt') {
+    return <BrainCircuit size={20} />
+  }
+
+  if (id === 'claude') {
+    return <Sparkles size={20} />
+  }
+
+  if (id === 'gemini') {
+    return <Gem size={20} />
+  }
+
+  return <Network size={20} />
 }
 
 export default App
