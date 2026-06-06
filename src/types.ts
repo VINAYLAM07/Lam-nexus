@@ -5,7 +5,6 @@ export type ModelConfig = {
   provider: string
   model: string
   tone: string
-  accent: string
 }
 
 export type ModelRunState =
