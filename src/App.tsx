@@ -1,5 +1,5 @@
-import { useMemo, useState, type CSSProperties } from 'react'
-import { useForm } from 'react-hook-form'
+import { useMemo, useState, type CSSProperties } from "react";
+import { useForm } from "react-hook-form";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -13,89 +13,93 @@ import {
   Sparkles,
   Type,
   X,
-} from 'lucide-react'
-import { runMockModel } from './api/mockLlmClient'
-import { models } from './config/models'
-import { usePreferences } from './stores/preferences'
-import type { ModelConfig, ModelRunState, ProviderId } from './types'
-import './App.css'
+} from "lucide-react";
+import { runMockModel } from "./api/mockLlmClient";
+import { models } from "./config/models";
+import { usePreferences } from "./stores/preferences";
+import type { ModelConfig, ModelRunState, ProviderId } from "./types";
+import "./App.css";
 
 type PromptForm = {
-  prompt: string
-}
+  prompt: string;
+};
 
 const initialStates = models.reduce(
   (states, model) => ({
     ...states,
-    [model.id]: { status: 'idle' },
+    [model.id]: { status: "idle" },
   }),
   {} as Record<ProviderId, ModelRunState>,
-)
+);
 
 function App() {
-  const [runs, setRuns] = useState<Record<ProviderId, ModelRunState>>(initialStates)
-  const [lastPrompt, setLastPrompt] = useState('')
-  const { fontFamily, setFontFamily } = usePreferences()
+  const [runs, setRuns] =
+    useState<Record<ProviderId, ModelRunState>>(initialStates);
+  const [lastPrompt, setLastPrompt] = useState("");
+  const { backgroundUrl, fontFamily, setFontFamily } = usePreferences();
   const { register, handleSubmit, watch, resetField } = useForm<PromptForm>({
-    defaultValues: { prompt: '' },
-  })
+    defaultValues: { prompt: "" },
+  });
 
-  const promptValue = watch('prompt')
-  const isAnyLoading = Object.values(runs).some((run) => run.status === 'loading')
+  const promptValue = watch("prompt");
+  const isAnyLoading = Object.values(runs).some(
+    (run) => run.status === "loading",
+  );
 
   const appStyle = useMemo<CSSProperties & Record<string, string>>(
     () => ({
-      '--app-font':
-        fontFamily === 'System'
-          ? 'system-ui, Segoe UI, sans-serif'
-          : `${fontFamily}, system-ui, Segoe UI, sans-serif`,
+      "--app-font":
+        fontFamily === "System"
+          ? 'system-ui, "Segoe UI", sans-serif'
+          : `${fontFamily}, system-ui, "Segoe UI", sans-serif`,
+      "--app-bg-image": backgroundUrl ? `url("${backgroundUrl}")` : "none",
     }),
-    [fontFamily],
-  )
+    [backgroundUrl, fontFamily],
+  );
 
   const runSingleModel = async (model: ModelConfig, prompt: string) => {
-    const startedAt = performance.now()
+    const startedAt = performance.now();
     setRuns((current) => ({
       ...current,
-      [model.id]: { status: 'loading', startedAt },
-    }))
+      [model.id]: { status: "loading", startedAt },
+    }));
 
     try {
-      const text = await runMockModel(model, prompt)
+      const text = await runMockModel(model, prompt);
       setRuns((current) => ({
         ...current,
         [model.id]: {
-          status: 'success',
+          status: "success",
           text,
           latencyMs: Math.round(performance.now() - startedAt),
         },
-      }))
+      }));
     } catch (error) {
       setRuns((current) => ({
         ...current,
         [model.id]: {
-          status: 'error',
+          status: "error",
           message:
             error instanceof Error
               ? error.message
-              : 'The model did not return a readable response.',
+              : "The model did not return a readable response.",
           retryable: true,
         },
-      }))
+      }));
     }
-  }
+  };
 
   const runPrompt = ({ prompt }: PromptForm) => {
-    const cleanPrompt = prompt.trim()
+    const cleanPrompt = prompt.trim();
     if (!cleanPrompt) {
-      return
+      return;
     }
 
-    setLastPrompt(cleanPrompt)
+    setLastPrompt(cleanPrompt);
     models.forEach((model) => {
-      void runSingleModel(model, cleanPrompt)
-    })
-  }
+      void runSingleModel(model, cleanPrompt);
+    });
+  };
 
   return (
     <main className="app-shell" style={appStyle}>
@@ -110,19 +114,17 @@ function App() {
                 aria-label="Select font"
               >
                 <option>Inter</option>
-                <option>Geist</option>
                 <option>Manrope</option>
+                <option>Georgia</option>
                 <option>System</option>
               </select>
             </label>
           </div>
 
           <header className="brand-bar">
-            <img
-              src="/assets/logo/lam-nexus-logo.png"
-              alt="LAM NEXUS"
-              className="brand-logo"
-            />
+            <div className="brand-title">
+              <span>LAM NEXUS</span>
+            </div>
           </header>
 
           <form className="prompt-zone" onSubmit={handleSubmit(runPrompt)}>
@@ -131,13 +133,13 @@ function App() {
                 id="prompt"
                 rows={3}
                 placeholder="Ask LAM NEXUS anything..."
-                {...register('prompt')}
+                {...register("prompt")}
               />
               <div className="prompt-actions">
                 <button
                   type="button"
                   className="icon-button ghost"
-                  onClick={() => resetField('prompt')}
+                  onClick={() => resetField("prompt")}
                   title="Clear prompt"
                   aria-label="Clear prompt"
                 >
@@ -153,7 +155,7 @@ function App() {
                   ) : (
                     <Send size={18} />
                   )}
-                  <span>{isAnyLoading ? 'Running' : 'Send'}</span>
+                  <span>{isAnyLoading ? "Running" : "Send"}</span>
                 </button>
               </div>
             </div>
@@ -173,15 +175,15 @@ function App() {
         </section>
       </section>
     </main>
-  )
+  );
 }
 
 type ResponsePanelProps = {
-  model: ModelConfig
-  state: ModelRunState
-  canRetry: boolean
-  onRetry: () => void
-}
+  model: ModelConfig;
+  state: ModelRunState;
+  canRetry: boolean;
+  onRetry: () => void;
+};
 
 const ResponsePanel = ({
   model,
@@ -190,15 +192,15 @@ const ResponsePanel = ({
   onRetry,
 }: ResponsePanelProps) => {
   const copyResponse = async () => {
-    if (state.status === 'success') {
-      await navigator.clipboard.writeText(state.text)
+    if (state.status === "success") {
+      await navigator.clipboard.writeText(state.text);
     }
-  }
+  };
 
   return (
     <article
       className={`response-panel ${state.status}`}
-      style={{ '--model-accent': model.accent } as CSSProperties}
+      style={{ "--model-accent": model.accent } as CSSProperties}
     >
       <div className="panel-heading">
         <div className="model-title">
@@ -214,14 +216,14 @@ const ResponsePanel = ({
       </div>
 
       <div className="panel-body">
-        {state.status === 'idle' && (
+        {state.status === "idle" && (
           <div className="empty-state">
             <ModelIcon id={model.id} />
             <p>{model.tone}</p>
           </div>
         )}
 
-        {state.status === 'loading' && (
+        {state.status === "loading" && (
           <div className="loading-state">
             <span />
             <span />
@@ -230,9 +232,9 @@ const ResponsePanel = ({
           </div>
         )}
 
-        {state.status === 'success' && <pre>{state.text}</pre>}
+        {state.status === "success" && <pre>{state.text}</pre>}
 
-        {state.status === 'error' && (
+        {state.status === "error" && (
           <div className="error-state">
             <AlertTriangle size={24} />
             <strong>{model.provider} did not respond</strong>
@@ -242,8 +244,8 @@ const ResponsePanel = ({
       </div>
 
       <div className="panel-footer">
-        {state.status === 'success' && <span>{state.latencyMs} ms</span>}
-        {state.status === 'error' && state.retryable && (
+        {state.status === "success" && <span>{state.latencyMs} ms</span>}
+        {state.status === "error" && state.retryable && (
           <button
             type="button"
             className="small-button"
@@ -254,7 +256,7 @@ const ResponsePanel = ({
             Retry
           </button>
         )}
-        {state.status === 'success' && (
+        {state.status === "success" && (
           <button
             type="button"
             className="icon-button"
@@ -267,54 +269,54 @@ const ResponsePanel = ({
         )}
       </div>
     </article>
-  )
-}
+  );
+};
 
 const StatusBadge = ({ state }: { state: ModelRunState }) => {
-  if (state.status === 'loading') {
+  if (state.status === "loading") {
     return (
       <span className="status-badge loading">
         <LoaderCircle size={14} />
         Loading
       </span>
-    )
+    );
   }
 
-  if (state.status === 'success') {
+  if (state.status === "success") {
     return (
       <span className="status-badge success">
         <Check size={14} />
         Ready
       </span>
-    )
+    );
   }
 
-  if (state.status === 'error') {
+  if (state.status === "error") {
     return (
       <span className="status-badge error">
         <AlertTriangle size={14} />
         Error
       </span>
-    )
+    );
   }
 
-  return <span className="status-badge">Idle</span>
-}
+  return <span className="status-badge">Idle</span>;
+};
 
 const ModelIcon = ({ id }: { id: ProviderId }) => {
-  if (id === 'gpt') {
-    return <BrainCircuit size={20} />
+  if (id === "gpt") {
+    return <BrainCircuit size={20} />;
   }
 
-  if (id === 'claude') {
-    return <Sparkles size={20} />
+  if (id === "claude") {
+    return <Sparkles size={20} />;
   }
 
-  if (id === 'gemini') {
-    return <Gem size={20} />
+  if (id === "gemini") {
+    return <Gem size={20} />;
   }
 
-  return <Network size={20} />
-}
+  return <Network size={20} />;
+};
 
-export default App
+export default App;
