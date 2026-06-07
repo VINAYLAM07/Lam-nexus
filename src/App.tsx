@@ -122,9 +122,7 @@ function App() {
           </div>
 
           <header className="brand-bar">
-            <div className="brand-title">
-              <span>LAM NEXUS</span>
-            </div>
+            <h1 className="brand-title">LAM NEXUS</h1>
           </header>
 
           <form className="prompt-zone" onSubmit={handleSubmit(runPrompt)}>
