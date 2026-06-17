@@ -82,7 +82,9 @@ function App() {
           prompt,
         }),
       });
-
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
       const text = await response.text();
       setRuns((current) => ({
         ...current,
