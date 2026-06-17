@@ -65,7 +65,25 @@ function App() {
     }));
 
     try {
-      const text = await runMockModel(model, prompt);
+      // const text = await runMockModel(model, prompt);
+      // const response = await fetch(
+      //   `http://localhost:8080/api/openai/${encodeURIComponent(prompt)}`,
+      // );
+      // const text = await response.text();
+      console.log("Calling backend for:", model.id);
+      const response = await fetch("http://localhost:8080/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: model.provider,
+          model: model.model,
+          prompt,
+        }),
+      });
+
+      const text = await response.text();
       setRuns((current) => ({
         ...current,
         [model.id]: {
@@ -91,12 +109,15 @@ function App() {
 
   const runPrompt = ({ prompt }: PromptForm) => {
     const cleanPrompt = prompt.trim();
+
     if (!cleanPrompt) {
       return;
     }
 
     setLastPrompt(cleanPrompt);
+
     models.forEach((model) => {
+      console.log("Submitting:", model.id);
       void runSingleModel(model, cleanPrompt);
     });
   };
@@ -206,7 +227,7 @@ const ResponsePanel = ({
             <ModelIcon id={model.id} />
           </span>
           <div>
-            <span>{model.provider}</span>
+            <span>{model.displayName}</span>
             <strong>{model.model}</strong>
           </div>
         </div>
