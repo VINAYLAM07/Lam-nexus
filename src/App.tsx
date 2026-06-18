@@ -19,6 +19,8 @@ import { models } from "./config/models";
 import { usePreferences } from "./stores/preferences";
 import type { ModelConfig, ModelRunState, ProviderId } from "./types";
 import "./App.css";
+import Reactmarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type PromptForm = {
   prompt: string;
@@ -218,6 +220,9 @@ const ResponsePanel = ({
     }
   };
 
+  const getModelDisplayName = (model: string) => {
+    return model.replace(/^[^/]+\//, "").replace(/:free$/, "");
+  };
   return (
     <article
       className={`response-panel ${state.status}`}
@@ -230,7 +235,7 @@ const ResponsePanel = ({
           </span>
           <div>
             <span>{model.displayName}</span>
-            <strong>{model.model}</strong>
+            <strong>{getModelDisplayName(model.model)}</strong>
           </div>
         </div>
         <StatusBadge state={state} />
@@ -253,7 +258,11 @@ const ResponsePanel = ({
           </div>
         )}
 
-        {state.status === "success" && <pre>{state.text}</pre>}
+        {state.status === "success" && (
+          <Reactmarkdown remarkPlugins={[remarkGfm]}>
+            {state.text}
+          </Reactmarkdown>
+        )}
 
         {state.status === "error" && (
           <div className="error-state">
