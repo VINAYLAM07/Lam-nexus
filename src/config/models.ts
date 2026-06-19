@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../types";
+import type { ModelConfig, ProviderId } from "../types";
 
 export const models: ModelConfig[] = [
   {
@@ -11,10 +11,10 @@ export const models: ModelConfig[] = [
   },
   {
     id: "claude",
-    displayName: "Claude",
-    provider: "ollama",
-    model: "qwen3:8b",
-    tone: "Careful and nuanced",
+    displayName: "Qwen",
+    provider: "groq",
+    model: "qwen/qwen3-32b",
+    tone: "Reasoning focused",
     accent: "#ff9f6e",
   },
   {

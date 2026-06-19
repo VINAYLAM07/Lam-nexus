@@ -723,3 +723,18 @@ body,
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
+.panel-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.panel-body th,
+.panel-body td {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px;
+}
+
+.panel-body table {
+  display: block;
+  overflow-x: auto;
+}
