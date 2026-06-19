@@ -59,6 +59,30 @@ function App() {
     [backgroundUrl, fontFamily],
   );
 
+  const successfulRuns = Object.entries(runs).filter(
+    ([_, run]) => run.status === "success",
+  ) as Array<
+    [
+      ProviderId,
+      {
+        status: "success";
+        text: string;
+        latencyMs: number;
+      },
+    ]
+  >;
+
+  let fastestModel: ProviderId | undefined;
+
+  let fastestTime = Number.MAX_VALUE;
+
+  Object.entries(runs).forEach(([id, run]) => {
+    if (run.status === "success" && run.latencyMs < fastestTime) {
+      fastestTime = run.latencyMs;
+      fastestModel = id as ProviderId;
+    }
+  });
+
   const runSingleModel = async (model: ModelConfig, prompt: string) => {
     const startedAt = performance.now();
     setRuns((current) => ({
@@ -184,13 +208,22 @@ function App() {
             </div>
           </form>
         </section>
+        {fastestModel && (
+          <div className="winner-banner">
+            <strong>
+              {models.find((m) => m.id === fastestModel)?.displayName}
+            </strong>
 
+            <span>{winnerMessage}</span>
+          </div>
+        )}
         <section className="response-grid" aria-label="LLM responses">
           {models.map((model) => (
             <ResponsePanel
               key={model.id}
               model={model}
               state={runs[model.id]}
+              fastestModel={fastestModel}
               canRetry={Boolean(lastPrompt)}
               onRetry={() => void runSingleModel(model, lastPrompt)}
             />
@@ -204,6 +237,7 @@ function App() {
 type ResponsePanelProps = {
   model: ModelConfig;
   state: ModelRunState;
+  fastestModel?: ProviderId;
   canRetry: boolean;
   onRetry: () => void;
 };
@@ -211,12 +245,20 @@ type ResponsePanelProps = {
 const ResponsePanel = ({
   model,
   state,
+  fastestModel,
   canRetry,
   onRetry,
 }: ResponsePanelProps) => {
+  const [copied, setCopied] = useState(false);
+  const wordCount =
+    state.status === "success" ? state.text.split(/\s+/).length : 0;
   const copyResponse = async () => {
     if (state.status === "success") {
       await navigator.clipboard.writeText(state.text);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     }
   };
 
@@ -225,7 +267,11 @@ const ResponsePanel = ({
   };
   return (
     <article
-      className={`response-panel ${state.status}`}
+      className={`
+  response-panel
+  ${state.status}
+  ${fastestModel === model.id ? "winner-card" : ""}
+`}
       style={{ "--model-accent": model.accent } as CSSProperties}
     >
       <div className="panel-heading">
@@ -233,12 +279,42 @@ const ResponsePanel = ({
           <span className="model-icon">
             <ModelIcon id={model.id} />
           </span>
-          <div>
+          {/* <div>
             <span>{model.displayName}</span>
+            <strong>{getModelDisplayName(model.model)}</strong>
+          </div> */}
+          <div>
+            <span>
+              {model.displayName}
+              {state.status === "success" && (
+                <span className="latency-inline">
+                  {" "}
+                  ⚡ {(state.latencyMs / 1000).toFixed(1)}s
+                </span>
+              )}
+              {/* {fastestModel === model.id && state.status === "success" && (
+                <span className="title-winner">🥇</span>
+              )} */}
+            </span>
+
             <strong>{getModelDisplayName(model.model)}</strong>
           </div>
         </div>
-        <StatusBadge state={state} />
+        <div className="header-right">
+          {/* {fastestModel === model.id && state.status === "success" && (
+            <span className="title-winner">🏆</span>
+          )} */}
+
+          <>
+            {/* {state.status === "success" && (
+              <span className="latency-pill">
+                ⚡ {formatLatency(state.latencyMs)} ms
+              </span>
+            )} */}
+
+            <StatusBadge state={state} />
+          </>
+        </div>
       </div>
 
       <div className="panel-body">
@@ -276,7 +352,7 @@ const ResponsePanel = ({
       </div>
 
       <div className="panel-footer">
-        {state.status === "success" && <span>{state.latencyMs} ms</span>}
+        {/* {state.status === "success" && <span>{state.latencyMs} ms</span>} */}
         {state.status === "error" && state.retryable && (
           <button
             type="button"
@@ -289,15 +365,18 @@ const ResponsePanel = ({
           </button>
         )}
         {state.status === "success" && (
-          <button
-            type="button"
-            className="icon-button"
-            onClick={copyResponse}
-            title="Copy response"
-            aria-label={`Copy ${model.provider} response`}
-          >
-            <Copy size={16} />
-          </button>
+          <>
+            <span className="response-meta">📝 {wordCount} words</span>
+
+            <button
+              type="button"
+              className="icon-button"
+              onClick={copyResponse}
+              title="Copy response"
+            >
+              {copied ? "✓ Copied" : <Copy size={16} />}
+            </button>
+          </>
         )}
       </div>
     </article>
@@ -350,5 +429,18 @@ const ModelIcon = ({ id }: { id: ProviderId }) => {
 
   return <Network size={20} />;
 };
+const formatLatency = (ms: number) => {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+};
+const winnerMessages = [
+  `This time I'm faster 🚀`,
+  `Speed matters ⚡`,
+  `Leading the pack today 🏆`,
+  `Fastest response this round 🎯`,
+  `Blink and you'll miss me 😎`,
+];
 
+const winnerMessage =
+  winnerMessages[Math.floor(Math.random() * winnerMessages.length)];
 export default App;
