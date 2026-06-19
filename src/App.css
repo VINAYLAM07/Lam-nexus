@@ -60,11 +60,6 @@ textarea::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.25);
   border-radius: 999px;
 }
-/* textarea {
-  min-height: 80px;
-  padding: 24px;
-  font-size: 18px;
-} */
 textarea::placeholder {
   color: rgba(255, 255, 255, 0.55);
 }
@@ -111,7 +106,7 @@ textarea::placeholder {
     rgba(5, 8, 0, 0.55) /* rgba(5, 8, 18, 0.55),
     rgba(5, 8, 18, 0.75) */
   );
-
+  /* backdrop-filter: blur(12px); */
   pointer-events: none;
   z-index: 0;
 }
@@ -675,7 +670,7 @@ body,
   position: fixed;
   inset: 0;
 
-  background-image: url("/32.jpg");
+  background-image: url("/30.jpg");
   background-size: cover;
   background-position: center;
 
@@ -695,4 +690,36 @@ body,
 #root {
   height: 100%;
   overflow: hidden;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px;
+  text-align: left;
+}
+
+.markdown-content th {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.markdown-content p {
+  margin: 0.75rem 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.5rem;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }

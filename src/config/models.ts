@@ -12,8 +12,8 @@ export const models: ModelConfig[] = [
   {
     id: "claude",
     displayName: "Claude",
-    provider: "openrouter",
-    model: "qwen/qwen3-next-80b-a3b-instruct:free",
+    provider: "ollama",
+    model: "qwen3:8b",
     tone: "Careful and nuanced",
     accent: "#ff9f6e",
   },

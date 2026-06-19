@@ -259,9 +259,11 @@ const ResponsePanel = ({
         )}
 
         {state.status === "success" && (
-          <Reactmarkdown remarkPlugins={[remarkGfm]}>
-            {state.text}
-          </Reactmarkdown>
+          <div className="markdown-content">
+            <Reactmarkdown remarkPlugins={[remarkGfm]}>
+              {state.text}
+            </Reactmarkdown>
+          </div>
         )}
 
         {state.status === "error" && (
