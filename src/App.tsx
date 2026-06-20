@@ -38,6 +38,14 @@ function App() {
   const [runs, setRuns] =
     useState<Record<ProviderId, ModelRunState>>(initialStates);
   const [lastPrompt, setLastPrompt] = useState("");
+  const [selectedModels, setSelectedModels] = useState<
+    Record<ProviderId, string>
+  >(
+    Object.fromEntries(models.map((m) => [m.id, m.model])) as Record<
+      ProviderId,
+      string
+    >,
+  );
   const { backgroundUrl, fontFamily, setFontFamily } = usePreferences();
   const { register, handleSubmit, watch, resetField } = useForm<PromptForm>({
     defaultValues: { prompt: "" },
@@ -104,7 +112,7 @@ function App() {
         },
         body: JSON.stringify({
           provider: model.provider,
-          model: model.model,
+          model: selectedModels[model.id],
           prompt,
         }),
       });
@@ -226,6 +234,13 @@ function App() {
               fastestModel={fastestModel}
               canRetry={Boolean(lastPrompt)}
               onRetry={() => void runSingleModel(model, lastPrompt)}
+              selectedModel={selectedModels[model.id]}
+              onModelChange={(value) =>
+                setSelectedModels((current) => ({
+                  ...current,
+                  [model.id]: value,
+                }))
+              }
             />
           ))}
         </section>
@@ -240,6 +255,8 @@ type ResponsePanelProps = {
   fastestModel?: ProviderId;
   canRetry: boolean;
   onRetry: () => void;
+  selectedModel: string;
+  onModelChange: (value: string) => void;
 };
 
 const ResponsePanel = ({
@@ -248,6 +265,8 @@ const ResponsePanel = ({
   fastestModel,
   canRetry,
   onRetry,
+  selectedModel,
+  onModelChange,
 }: ResponsePanelProps) => {
   const [copied, setCopied] = useState(false);
   const wordCount =
@@ -283,7 +302,7 @@ const ResponsePanel = ({
             <span>{model.displayName}</span>
             <strong>{getModelDisplayName(model.model)}</strong>
           </div> */}
-          <div>
+          <div className="model-meta">
             <span>
               {model.displayName}
               {state.status === "success" && (
@@ -292,12 +311,26 @@ const ResponsePanel = ({
                   ⚡ {(state.latencyMs / 1000).toFixed(1)}s
                 </span>
               )}
-              {/* {fastestModel === model.id && state.status === "success" && (
-                <span className="title-winner">🥇</span>
-              )} */}
             </span>
-
-            <strong>{getModelDisplayName(model.model)}</strong>
+            {/* <strong>{getModelDisplayName(model.model)}</strong> */}
+            {/* <strong>
+              {model.availableModels?.find((m) => m.value === selectedModel)
+                ?.label ?? getModelDisplayName(model.model)}
+            </strong> */}
+            <select
+              className="model-select"
+              value={selectedModel}
+              onChange={(e) => onModelChange(e.target.value)}
+            >
+              {/* <option value={model.model}>
+                {getModelDisplayName(model.model)}
+              </option> */}
+              {model.availableModels?.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="header-right">
