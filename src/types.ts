@@ -5,6 +5,10 @@ export type ModelConfig = {
   displayName: string;
   provider: string;
   model: string;
+  availableModels?: {
+    label: string;
+    value: string;
+  }[];
   tone: string;
   accent: string;
 };
