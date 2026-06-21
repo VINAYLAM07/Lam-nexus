@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { exportResults } from "./utils/exportResults";
 import { Mic } from "lucide-react";
 import { Volume2 } from "lucide-react";
+import { cleanText } from "./utils/textCleaner";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -52,7 +53,8 @@ function App() {
       string
     >,
   );
-  const recognitionRef = useRef<any>(null);
+  // const recognitionRef = useRef<any>(null);
+  const [isListening, setIsListening] = useState(false);
   const { backgroundUrl, fontFamily, setFontFamily } = usePreferences();
   const { register, handleSubmit, watch, resetField, setValue } =
     useForm<PromptForm>({
@@ -167,7 +169,8 @@ function App() {
   };
   const startVoiceInput = () => {
     const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
@@ -180,15 +183,24 @@ function App() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
 
       setValue("prompt", transcript);
+      shouldValidate: true;
+      shouldDirty: true;
     };
 
     recognition.start();
-
-    recognitionRef.current = recognition;
   };
   return (
     <main className="app-shell" style={appStyle}>
@@ -239,6 +251,9 @@ function App() {
                   title="Voice input"
                 >
                   <Mic size={18} />
+                  {isListening && (
+                    <span className="listening-indicator">Listening...</span>
+                  )}
                 </button>
                 <button
                   type="submit"
@@ -268,6 +283,7 @@ function App() {
             <button
               type="button"
               className="export-button"
+              disabled={isAnyLoading}
               onClick={() => exportResults(lastPrompt, runs, models)}
             >
               📥 Export Results
@@ -323,7 +339,7 @@ const ResponsePanel = ({
     state.status === "success" ? state.text.split(/\s+/).length : 0;
   const copyResponse = async () => {
     if (state.status === "success") {
-      await navigator.clipboard.writeText(state.text);
+      await navigator.clipboard.writeText(cleanText(state.text));
       setCopied(true);
       setTimeout(() => {
         setCopied(false);
@@ -355,6 +371,7 @@ const ResponsePanel = ({
           <button
             type="button"
             className="model-icon model-icon-button"
+            disabled={state.status !== "success"}
             title="Read response"
             data-tooltip="Read response"
             style={{ "--model-accent": model.accent } as CSSProperties}
@@ -558,11 +575,8 @@ export default App;
 
 const speakText = (text: string) => {
   window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-
+  const utterance = new SpeechSynthesisUtterance(cleanText(text));
   utterance.rate = 1;
   utterance.pitch = 1;
-
   window.speechSynthesis.speak(utterance);
 };
