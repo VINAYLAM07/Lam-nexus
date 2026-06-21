@@ -1,6 +1,8 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, useRef, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { exportResults } from "./utils/exportResults";
+import { Mic } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -50,10 +52,12 @@ function App() {
       string
     >,
   );
+  const recognitionRef = useRef<any>(null);
   const { backgroundUrl, fontFamily, setFontFamily } = usePreferences();
-  const { register, handleSubmit, watch, resetField } = useForm<PromptForm>({
-    defaultValues: { prompt: "" },
-  });
+  const { register, handleSubmit, watch, resetField, setValue } =
+    useForm<PromptForm>({
+      defaultValues: { prompt: "" },
+    });
 
   const promptValue = watch("prompt");
   const isAnyLoading = Object.values(runs).some(
@@ -161,7 +165,31 @@ function App() {
       void runSingleModel(model, cleanPrompt);
     });
   };
+  const startVoiceInput = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
 
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+
+      setValue("prompt", transcript);
+    };
+
+    recognition.start();
+
+    recognitionRef.current = recognition;
+  };
   return (
     <main className="app-shell" style={appStyle}>
       <section className="workspace">
@@ -205,6 +233,14 @@ function App() {
                   <X size={18} />
                 </button>
                 <button
+                  type="button"
+                  className="icon-button ghost"
+                  onClick={startVoiceInput}
+                  title="Voice input"
+                >
+                  <Mic size={18} />
+                </button>
+                <button
                   type="submit"
                   className="send-button"
                   disabled={!promptValue?.trim() || isAnyLoading}
@@ -238,17 +274,7 @@ function App() {
             </button>
           </div>
         )}
-        {/* {hasResults && (
-          <div className="comparison-toolbar">
-            <button
-              type="button"
-              className="export-button"
-              onClick={() => exportResults(lastPrompt, runs, models)}
-            >
-              Export Results
-            </button>
-          </div>
-        )} */}
+
         <section className="response-grid" aria-label="LLM responses">
           {models.map((model) => (
             <ResponsePanel
@@ -319,13 +345,33 @@ const ResponsePanel = ({
     >
       <div className="panel-heading">
         <div className="model-title">
-          <span className="model-icon">
+          {/*<span className="model-icon">
             <ModelIcon id={model.id} />
           </span>
-          {/* <div>
+           <div>
             <span>{model.displayName}</span>
             <strong>{getModelDisplayName(model.model)}</strong>
           </div> */}
+          <button
+            type="button"
+            className="model-icon model-icon-button"
+            title="Read response"
+            data-tooltip="Read response"
+            style={{ "--model-accent": model.accent } as CSSProperties}
+            onClick={() => {
+              if (state.status === "success") {
+                speakText(state.text);
+              }
+            }}
+          >
+            <span className="icon-default">
+              <ModelIcon id={model.id} />
+            </span>
+
+            <span className="icon-hover">
+              <Volume2 size={20} />
+            </span>
+          </button>
           <div className="model-meta">
             <span>
               {model.displayName}
@@ -509,3 +555,14 @@ const winnerMessages = [
 const winnerMessage =
   winnerMessages[Math.floor(Math.random() * winnerMessages.length)];
 export default App;
+
+const speakText = (text: string) => {
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  utterance.rate = 1;
+  utterance.pitch = 1;
+
+  window.speechSynthesis.speak(utterance);
+};
