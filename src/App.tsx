@@ -358,15 +358,23 @@ const ResponsePanel = ({
           </div>
         )}
 
-        {state.status === "loading" && (
+        {/* {state.status === "loading" && (
           <div className="loading-state">
             <span />
             <span />
             <span />
             <p>{model.provider} is preparing a response.</p>
           </div>
+        )} */}
+        {state.status === "loading" && (
+          <div className="loading-skeleton">
+            <div className="loading-line" />
+            <div className="loading-line" />
+            <div className="loading-line" />
+            <div className="loading-line" />
+            <div className="loading-line" />
+          </div>
         )}
-
         {state.status === "success" && (
           <div className="markdown-content">
             <Reactmarkdown remarkPlugins={[remarkGfm]}>

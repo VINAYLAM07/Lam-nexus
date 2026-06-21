@@ -53,18 +53,6 @@ export const models: ModelConfig[] = [
         label: "llama-3.1-8b-instant",
         value: "llama-3.1-8b-instant",
       },
-      {
-        label: "llama-4-scout-17b-16e-instruct",
-        value: "meta-llama/llama-4-scout-17b-16e-instruct",
-      },
-      {
-        label: "llama-prompt-guard-2-22m",
-        value: "meta-llama/llama-prompt-guard-2-22m",
-      },
-      {
-        label: "llama-prompt-guard-2-86m",
-        value: "meta-llama/llama-prompt-guard-2-86m",
-      },
     ],
     tone: "Concise and open-source",
     accent: "#d98cff",

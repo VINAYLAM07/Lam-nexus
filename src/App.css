@@ -66,7 +66,7 @@ textarea::placeholder {
 
 .prompt-card,
 .response-panel {
-  background: rgba(10, 15, 30, 0.25);
+  background: rgba(10, 15, 30, 0.42);
   backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
@@ -370,7 +370,7 @@ select {
   min-height: 220px;
   min-width: 0;
   /* backdrop-filter: blur(28px); */
-  background: rgba(20, 20, 30, 0.25);
+  background: rgba(20, 20, 30, 0.42);
   backdrop-filter: blur(32px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -505,7 +505,7 @@ select {
   color: var(--model-accent);
 }
 
-.loading-state span {
+/* .loading-state span {
   width: 100%;
   height: 13px;
   border-radius: 999px;
@@ -517,7 +517,7 @@ select {
   );
   background-size: 220% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
-}
+} */
 
 .loading-state span:nth-child(2) {
   width: 82%;
@@ -895,4 +895,39 @@ body,
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loading-line {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.05)
+  );
+
+  background-size: 300% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+.loading-line:nth-child(1) {
+  width: 95%;
+}
+.loading-line:nth-child(2) {
+  width: 80%;
+}
+.loading-line:nth-child(3) {
+  width: 90%;
+}
+.loading-line:nth-child(4) {
+  width: 65%;
+}
+.loading-line:nth-child(5) {
+  width: 75%;
 }
