@@ -987,3 +987,66 @@ body,
   width: 100%;
   margin: 12px 0 18px;
 }
+.model-icon-button {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--model-accent);
+  background: color-mix(in srgb, var(--model-accent) 10%, transparent);
+  color: var(--model-accent);
+  cursor: pointer;
+}
+
+.icon-default,
+.icon-hover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.icon-hover {
+  opacity: 0;
+  transform: scale(0.8);
+  color: var(--model-accent);
+}
+
+.model-icon-button:hover .icon-default {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.model-icon-button:hover .icon-hover {
+  opacity: 1;
+  transform: scale(1);
+}
+.model-icon-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.model-icon-button:hover::after {
+  opacity: 1;
+}
+.icon-default svg,
+.icon-hover svg {
+  color: inherit;
+  stroke: currentColor;
+}
