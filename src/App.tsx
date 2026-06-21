@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
+import { exportResults } from "./utils/exportResults";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -38,6 +39,9 @@ function App() {
   const [runs, setRuns] =
     useState<Record<ProviderId, ModelRunState>>(initialStates);
   const [lastPrompt, setLastPrompt] = useState("");
+  const hasResults = Object.values(runs).some(
+    (run) => run.status === "success" || run.status === "error",
+  );
   const [selectedModels, setSelectedModels] = useState<
     Record<ProviderId, string>
   >(
@@ -217,14 +221,34 @@ function App() {
           </form>
         </section>
         {fastestModel && (
-          <div className="winner-banner">
-            <strong>
-              {models.find((m) => m.id === fastestModel)?.displayName}
-            </strong>
+          <div className="top-actions">
+            <div className="winner-banner">
+              <strong>
+                {models.find((m) => m.id === fastestModel)?.displayName}
+              </strong>
 
-            <span>{winnerMessage}</span>
+              <span>{winnerMessage}</span>
+            </div>
+            <button
+              type="button"
+              className="export-button"
+              onClick={() => exportResults(lastPrompt, runs, models)}
+            >
+              📥 Export Results
+            </button>
           </div>
         )}
+        {/* {hasResults && (
+          <div className="comparison-toolbar">
+            <button
+              type="button"
+              className="export-button"
+              onClick={() => exportResults(lastPrompt, runs, models)}
+            >
+              Export Results
+            </button>
+          </div>
+        )} */}
         <section className="response-grid" aria-label="LLM responses">
           {models.map((model) => (
             <ResponsePanel
@@ -429,7 +453,7 @@ const StatusBadge = ({ state }: { state: ModelRunState }) => {
     return (
       <span className="status-badge loading">
         <LoaderCircle size={14} />
-        Loading
+        Thinking...
       </span>
     );
   }
