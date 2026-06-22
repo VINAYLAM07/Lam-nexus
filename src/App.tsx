@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { exportResults } from "./utils/exportResults";
 import { Mic } from "lucide-react";
@@ -19,7 +19,6 @@ import {
   Type,
   X,
 } from "lucide-react";
-import { runMockModel } from "./api/mockLlmClient";
 import { models } from "./config/models";
 import { usePreferences } from "./stores/preferences";
 import type { ModelConfig, ModelRunState, ProviderId } from "./types";
@@ -43,9 +42,6 @@ function App() {
   const [runs, setRuns] =
     useState<Record<ProviderId, ModelRunState>>(initialStates);
   const [lastPrompt, setLastPrompt] = useState("");
-  const hasResults = Object.values(runs).some(
-    (run) => run.status === "success" || run.status === "error",
-  );
   const [selectedModels, setSelectedModels] = useState<
     Record<ProviderId, string>
   >(
@@ -54,7 +50,6 @@ function App() {
       string
     >,
   );
-  // const recognitionRef = useRef<any>(null);
   const [isListening, setIsListening] = useState(false);
   const { backgroundUrl, fontFamily, setFontFamily } = usePreferences();
   const { register, handleSubmit, watch, resetField, setValue } =
@@ -80,18 +75,6 @@ function App() {
     }),
     [fontFamily, finalBackground],
   );
-  const successfulRuns = Object.entries(runs).filter(
-    ([_, run]) => run.status === "success",
-  ) as Array<
-    [
-      ProviderId,
-      {
-        status: "success";
-        text: string;
-        latencyMs: number;
-      },
-    ]
-  >;
 
   let fastestModel: ProviderId | undefined;
 
@@ -350,9 +333,6 @@ const ResponsePanel = ({
     }
   };
 
-  const getModelDisplayName = (model: string) => {
-    return model.replace(/^[^/]+\//, "").replace(/:free$/, "");
-  };
   return (
     <article
       className={`
@@ -568,10 +548,7 @@ const ModelIcon = ({ id }: { id: ProviderId }) => {
 
   return <Network size={20} />;
 };
-const formatLatency = (ms: number) => {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-};
+
 const winnerMessages = [
   `This time I'm faster 🚀`,
   `Speed matters ⚡`,

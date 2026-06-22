@@ -1,4 +1,4 @@
-import type { ModelConfig, ProviderId } from "../types";
+import type { ModelConfig } from "../types";
 
 export const models: ModelConfig[] = [
   {
