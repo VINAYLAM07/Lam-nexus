@@ -4,6 +4,7 @@ import { exportResults } from "./utils/exportResults";
 import { Mic } from "lucide-react";
 import { Volume2 } from "lucide-react";
 import { cleanText } from "./utils/textCleaner";
+import { Square } from "lucide-react";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -65,18 +66,20 @@ function App() {
   const isAnyLoading = Object.values(runs).some(
     (run) => run.status === "loading",
   );
-
+  const envBackground = import.meta.env.VITE_BACKGROUND_URL;
+  const fallbackBackground = "/32.jpg";
+  const finalBackground =
+    envBackground?.trim() || backgroundUrl?.trim() || fallbackBackground;
   const appStyle = useMemo<CSSProperties & Record<string, string>>(
     () => ({
       "--app-font":
         fontFamily === "System"
           ? 'system-ui, "Segoe UI", sans-serif'
           : `${fontFamily}, system-ui, "Segoe UI", sans-serif`,
-      "--app-bg-image": backgroundUrl ? `url("${backgroundUrl}")` : "none",
+      "--app-bg-image": `url("${finalBackground}")`,
     }),
-    [backgroundUrl, fontFamily],
+    [fontFamily, finalBackground],
   );
-
   const successfulRuns = Object.entries(runs).filter(
     ([_, run]) => run.status === "success",
   ) as Array<
@@ -112,10 +115,10 @@ function App() {
       // const text = await runMockModel(model, prompt);
       // const response = await fetch(
       //   `http://localhost:8080/api/openai/${encodeURIComponent(prompt)}`,
-      // );
+      // );//"http://localhost:8080/api/chat"
       // const text = await response.text();
       console.log("Calling backend for:", model.id);
-      const response = await fetch("http://localhost:8080/api/chat", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -372,8 +375,8 @@ const ResponsePanel = ({
             type="button"
             className="model-icon model-icon-button"
             disabled={state.status !== "success"}
-            title="Read response"
-            data-tooltip="Read response"
+            title="Read / Restart response"
+            data-tooltip="Read / Restart response"
             style={{ "--model-accent": model.accent } as CSSProperties}
             onClick={() => {
               if (state.status === "success") {
@@ -503,6 +506,14 @@ const ResponsePanel = ({
               title="Copy response"
             >
               {copied ? "✓ Copied" : <Copy size={16} />}
+            </button>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => window.speechSynthesis.cancel()}
+              title="Stop reading"
+            >
+              <Square size={16} />
             </button>
           </>
         )}
